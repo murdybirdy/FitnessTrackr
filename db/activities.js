@@ -69,12 +69,56 @@ async function getActivityByName(name) {
 
 // used as a helper inside db/routines.js
 async function attachActivitiesToRoutines(routines) {
-  // try {
-  //   routines.map(routine =>)
-  // } catch (error) {
-  //   console.log("Error attaching activities to routines", error);
-  //   throw error;
-  // }
+  try {
+    // const routineId = routines
+    //   .map((routine) => routine.id)
+    //   .join(', ');
+    
+    // const { rows: routine_activities } = await client.query(/*sql*/ `
+    //   SELECT *
+    //   FROM routine_activities
+    //   WHERE "routineId" IN (${ routineId });
+    // `);
+
+    // const activityId = routine_activities
+    //   .map((activity) => activity.id)
+    //   .join(', ');
+
+    // const { rows: activitiesDC } = await client.query(/*sql*/ `
+    //   SELECT activities.*, routine_activities.duration, routine_activities.count, routine_activities."routineId", routine_activities.id AS "routineActivityId"
+    //   FROM activities
+    //   INNER JOIN routine_activities
+    //   ON activities.id = routine_activities."activityId"
+    //   WHERE activities.id IN (${ activityId });
+    // `);
+
+    // routines.forEach((routine) => { 
+    //   routine.activities = activitiesDC
+    // });
+
+    // return routines;
+
+    const { rows: routineNewActivities } = await client.query(/*sql*/`
+      SELECT activities.*,
+        routine_activities.duration, 
+        routine_activities.count, 
+        routine_activities."routineId",
+        routine_activities.id AS "routineActivityId"
+      FROM activities
+      INNER JOIN routine_activities
+      ON activities.id = routine_activities."activityId";  
+    `);
+    routines.forEach((routine) => {
+      routine.activities = routineNewActivities.filter((activityDC) => activityDC.routineId === routine.id);
+    });
+    return routines;
+
+  } catch (error) {
+    console.log("Error attaching activities to routines", error);
+    throw error;
+  }
+  // map through the routines, use the ids to find the activities in the routine_activities table
+  // 
 }
 
 async function updateActivity({ id, ...fields }) {
@@ -84,10 +128,11 @@ async function updateActivity({ id, ...fields }) {
   const setString = Object.keys(fields).map(
     (key, index) => `"${key}" = $${ index + 1 }`
   ).join(', ');
-    console.log(setString);
+
   if (setString.length === 0) {
     return;
   }
+  
   try {
     const { rows: [ activity ] } = await client.query(/*sql*/`
       UPDATE activities
