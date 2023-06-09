@@ -121,9 +121,7 @@ router.delete('/:routineId', async (req, res, next) => {
 // POST /api/routines/:routineId/activities
 router.post('/:routineId/activities', async (req, res, next) => {
   const { routineId } = req.params;
-  console.log("What is the routineID?", routineId);
-
-  console.log("req.body:", req.body);
+  
   try {
     const attachedActivities = await addActivityToRoutine(req.body);
     res.send(attachedActivities);

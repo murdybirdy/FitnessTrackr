@@ -43,28 +43,50 @@ router.patch('/:routineActivityId', async (req, res, next) => {
 });
 
 // DELETE /api/routine_activities/:routineActivityId
+// router.delete('/:routineActivityId', async (req, res, next) => {
+//   const id = req.params.routineActivityId;
+//   const userId = req.user.id;
+//   console.log("id, userId", id, userId);
+//   const username = req.user.username;
+
+//   try {
+//     const isValid = await canEditRoutineActivity(id, userId);
+//     const routineActivity = await getRoutineActivityById(id);
+//     const routine = await getRoutineById(routineActivity.routineId);
+    
+//       const deletedRoutineActivity = await destroyRoutineActivity(id);
+//       res.send(deletedRoutineActivity);
+
+//   } catch (error) {
+//     throw ({
+//       statusCode: 403,
+//       error: "Unauthorized",
+//       message: UnauthorizedDeleteError(username, routine.name),
+//       name: "User"
+//     });
+//   }
+// });
+
 router.delete('/:routineActivityId', async (req, res, next) => {
   const id = req.params.routineActivityId;
   const userId = req.user.id;
-  console.log("id, userId", id, userId);
   const username = req.user.username;
-
   try {
     const isValid = await canEditRoutineActivity(id, userId);
     const routineActivity = await getRoutineActivityById(id);
     const routine = await getRoutineById(routineActivity.routineId);
-    
+    if (!isValid) {
+      res.status(403).send ({
+        error: "Unauthorized",
+        name: "User",
+        message:  UnauthorizedDeleteError(username, routine.name)
+      })
+    } else {
       const deletedRoutineActivity = await destroyRoutineActivity(id);
       res.send(deletedRoutineActivity);
-
+    }
   } catch (error) {
-    throw ({
-      statusCode: 403,
-      error: "Unauthorized",
-      message: UnauthorizedDeleteError(username, routine.name),
-      name: "User"
-    });
+    next(error);
   }
 });
-
 module.exports = router;
