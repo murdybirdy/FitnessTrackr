@@ -53,7 +53,7 @@ async function getAllRoutines() {
     const { rows: routines } = await client.query(/*sql*/ `
       SELECT routines.*, users.username AS "creatorName"
       FROM routines
-      INNER JOIN users
+      JOIN users
       ON routines."creatorId" = users.id;
     `);
 
@@ -101,14 +101,14 @@ async function getAllRoutinesByUser({ username }) {
 
 async function getPublicRoutinesByUser({ username }) {
   try {
-    const routines = await getAllRoutines();
-    const userPublicRoutines = routines.filter(
-      (routine) => 
-      routine.creatorName === username &&
-      routine.isPublic === true
-      )
-
-    return userPublicRoutines;
+    const { rows: routines } = await client.query(/*sql*/`
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      INNER JOIN users
+      ON routines."creatorId" = users.id
+      WHERE users.username = $1 AND routines."isPublic" = true;  
+    `, [ username ]);
+    return await attachActivitiesToRoutines(routines);
 
   } catch (error) {
     console.log("Error getting public routines by user!");

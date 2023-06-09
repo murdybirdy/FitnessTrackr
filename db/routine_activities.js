@@ -9,8 +9,9 @@ async function addActivityToRoutine({ routineId, activityId, count, duration }) 
     `, [ routineId, activityId, count, duration ]);
 
     return routine_activity;
+    
   } catch (error) {
-    console.log("Error adding activity to routine", error);
+    console.log("Error adding activity to routine!");
     throw error;
   }
 }
@@ -20,28 +21,30 @@ async function getRoutineActivityById(id) {
     const { rows: [routine_activity] } = await client.query(/*sql*/ `
       SELECT *
       FROM routine_activities
-      WHERE id=$1
-    `, [id]);
+      WHERE id=$1;
+    `, [ id ]);
+    
     return routine_activity;
 
   } catch (error) {
-    console.log("Error getting routine by this id", error);
+    console.log("Error getting routine by this id!");
     throw error;
   }
 }
 
 async function getRoutineActivitiesByRoutine({ id }) {
+  console.log("Did I make it?", id);
   try {
     const { rows } = await client.query(/*sql*/ `
       SELECT *
       FROM routine_activities
-      WHERE id = $1;
-    `, [id])
+      WHERE "routineId" = $1;
+    `, [ id ])
 
     return rows;
 
   } catch (error) {
-    console.log("Error getting routine activities by routine!", error);
+    console.log("Error getting routine activities by routine!");
     throw error;
   }
 }
@@ -65,7 +68,7 @@ async function updateRoutineActivity({ id, ...fields }) {
     return routine_activity;
 
   } catch (error) {
-    console.log("Error updating routine activity", error);
+    console.log("Error updating routine activity!");
     throw error;
   }
 }
@@ -76,12 +79,12 @@ async function destroyRoutineActivity(id) {
       DELETE FROM routine_activities
       WHERE id = $1
       RETURNING *;
-    `, [id]);
+    `, [ id ]);
 
     return routine_activity;
 
   } catch (error) {
-    console.log("Error destroying routine activity!", error);
+    console.log("Error destroying routine activity!");
     throw error;
   }
 }
@@ -106,8 +109,9 @@ async function canEditRoutineActivity(routineActivityId, userId) {
     } else {
       return false;
     }
+
   } catch (error) {
-    console.log("Error editing routine_activity", error);
+    console.log("Error editing routine_activity!");
     throw error;
   }
 }
